@@ -23,7 +23,7 @@
 
 ## Консольная версия
 Примеры запуска : 
-* `py tcpping.py google.com 5`
+* `py tcpping.py google.com`
 
 
 ## Подробности реализации
