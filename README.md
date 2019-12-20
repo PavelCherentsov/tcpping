@@ -1,6 +1,6 @@
 ﻿# tcpping
 
-Версия 0.0.1
+Версия 0.1.0
 
 Автор: Черенцов Павел (pavelcherentsov23@gmail.com)
 
