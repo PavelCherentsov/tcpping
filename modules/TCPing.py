@@ -3,6 +3,13 @@ from .Packet import Packet
 from time import sleep
 from timeit import default_timer
 from math import inf
+from enum import Enum
+
+
+class Flag(Enum):
+    SYN_ACK = 0,
+    RST = 1,
+    NO_ANSWER = 2
 
 
 class TCPing:
@@ -57,28 +64,22 @@ class TCPing:
             try:
                 data = self.s.recv(1024)
             except socket.timeout:
-                res = False, 0
+                res = Flag.NO_ANSWER, 0
                 break
             if data[20:22] == self.packet[22:24] \
                     and data[22:24] == self.packet[20:22]:
                 if data[33:34] == b'\x12':
                     self.accept_count += 1
-                    res = True, len(data)
+                    res = Flag.SYN_ACK, len(data)
                 else:
-                    res = False, len(data)
+                    res = Flag.RST, len(data)
                 break
         self.s.close()
         return res
 
-    def print_packet(self, syn_ack, len_data, time):
-        if len_data == 0:
-            self.output(f'NO ANSWER \t from {self.dest_ip}:{self.dest_port}')
-        elif syn_ack:
-            self.output(f'SYN ACK \t {len_data} bytes from '
-                        f'{self.dest_ip}:{self.dest_port} \t time={time} ms')
-        else:
-            self.output(f'RST \t {len_data} bytes from '
-                        f'{self.dest_ip}:{self.dest_port} \t time={time} ms')
+    def print_packet(self, flag, len_data, time):
+        self.output(f'{flag}\t {len_data} bytes from '
+                    f'{self.dest_ip}:{self.dest_port} \t time={time} ms')
 
     def print_stat(self):
         percent_lose = round((self.count - self.accept_count) / self.count *

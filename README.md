@@ -1,6 +1,6 @@
-﻿# tcpping
+# tcpping
 
-Версия 0.2.0
+Версия 0.2.2
 
 Автор: Черенцов Павел (pavelcherentsov23@gmail.com)
 
@@ -10,11 +10,13 @@
 ## Описание
 Сетевая утилита tcpping.
 
-## Требования
+Этот скрипт представляет собой эмуляцию хорошо известной команды ping, 
+за исключением того, что он использует пакеты TCP SYN.
 
 
 ## Состав
 * Консольная версия: `tcpping.py`
+* Модули: `modules/`
 * Тесты: `tests/` 
 
 
@@ -22,8 +24,28 @@
 Справка по запуску: `sudo python3 tcpping.py -h`
 
 ## Консольная версия
-Примеры запуска : 
-* `sudo python3 tcpping.py google.com:80`
+Пример запуска : 
+* `$ sudo python3 tcping.py google.com:80 127.0.0.1:8888 255.255.0.0:1 
+-c 1 -t 3 -i 1`
+
+Вывод:
+
+    TCPing google.com (108.177.14.101:80).
+    Flag.SYN_ACK	 44 bytes from google.com:80 	 time=50.52 ms
+    --- google.com tcping statistics ---
+    1 transmitted, 1 received 0.0% packet loss, time 50.52 ms
+    rtt min/avg/max = 50.52/50.52/50.52 ms
+    TCPing 127.0.0.1 (127.0.0.1:8888).
+    Flag.RST	 40 bytes from 127.0.0.1:8888 	 time=0.09 ms
+    --- 127.0.0.1 tcping statistics ---
+    1 transmitted, 0 received 100.0% packet loss, time 0.09 ms
+    rtt min/avg/max = 0.09/0.09/0.09 ms
+    TCPing 255.255.0.0 (255.255.0.0:1).
+    Flag.NO_ANSWER	 0 bytes from 255.255.0.0:1 	 time=3003.44 ms
+    --- 255.255.0.0 tcping statistics ---
+    1 transmitted, 0 received 100.0% packet loss, time 3003.44 ms
+    rtt min/avg/max = 3003.44/3003.44/3003.44 ms
+
 
 
 ## Подробности реализации
@@ -39,7 +61,3 @@
     tests/test_all.py      51      1    98%
     ---------------------------------------
     TOTAL                 194     16    92%
-
-
-
-

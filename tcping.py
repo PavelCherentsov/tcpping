@@ -4,7 +4,6 @@ from modules.TCPing import TCPing
 
 def parse(hosts_ports):
     res = []
-    print(hosts_ports)
     for e in hosts_ports:
         host, port = e.split(":")
         res.append((host, int(port)))
