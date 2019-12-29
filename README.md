@@ -29,7 +29,7 @@
 * `$ sudo python3 tcping.py conf.yaml`
 
 Вывод:
-    ![Output](https://github.com/PavelCherentsov/tcping/raw/master/image/image.png)
+    ![Output](https://github.com/PavelCherentsov/tcpping/raw/master/image/image.png)
 
 ## Подробности реализации
 Модули, отвечающие за работу утилиты, расположены в пакете modules.
