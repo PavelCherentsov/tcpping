@@ -9,45 +9,45 @@ def get_ip_port_address():
 
 
 class Packet:
-    version = 0x4
-    ihl = 0x5
-    type_of_service = 0x0
-    total_length = 0x28
-    identification = 0xabcd
-    flags = 0x0
-    fragment_offset = 0x0
-    ttl = 0x40
-    protocol = 0x6
-    header_checksum = 0x0
+    VERSION = 0x4
+    IHL = 0x5
+    TYPE_OF_SERVICE = 0x0
+    TOTAL_LENGTH = 0x28
+    IDENTIFICATION = 0xabcd
+    FLAGS = 0x0
+    FRAGMENT_OFFSET = 0x0
+    TTL = 0x40
+    PROTOCOL = 0x6
+    HEADER_CHECKSUM = 0x0
 
-    v_ihl = (version << 4) + ihl
-    f_fo = (flags << 13) + fragment_offset
+    V_IHL = (VERSION << 4) + IHL
+    F_FO = (FLAGS << 13) + FRAGMENT_OFFSET
 
-    ip_header_to_checksum = pack("!BBHHHBB",
-                                 v_ihl,
-                                 type_of_service,
-                                 total_length,
-                                 identification,
-                                 f_fo,
-                                 ttl,
-                                 protocol)
+    IP_HEADER_TO_CHECKSUM = pack("!BBHHHBB",
+                                 V_IHL,
+                                 TYPE_OF_SERVICE,
+                                 TOTAL_LENGTH,
+                                 IDENTIFICATION,
+                                 F_FO,
+                                 TTL,
+                                 PROTOCOL)
 
-    seq_no = 0x0
-    ack_no = 0x0
-    data_offset = 0x5
-    reserved = 0x0
-    tcp_flags_syn = 0x2
-    window_size = 0x7110
-    urg_pointer = 0x0
+    SEQ_NO = 0x0
+    ACK_NO = 0x0
+    DATA_OFFSET = 0x5
+    RESERVED = 0x0
+    TCP_SYN = 0x2
+    WINDOW_SIZE = 0x7110
+    URG_POINTER = 0x0
 
-    data_offset_res_flags = (data_offset << 12) + \
-                            (reserved << 9) + tcp_flags_syn
+    DATA_OFFSET_RES_FLAGS = ((DATA_OFFSET << 12) +
+                             (RESERVED << 9) + TCP_SYN)
 
-    tcp_header_between_ports_checksum = pack("!LLHH",
-                                             seq_no,
-                                             ack_no,
-                                             data_offset_res_flags,
-                                             window_size)
+    TCP_HEADER_BETWEEN_PORTS_CHECKSUM = pack("!LLHH",
+                                             SEQ_NO,
+                                             ACK_NO,
+                                             DATA_OFFSET_RES_FLAGS,
+                                             WINDOW_SIZE)
 
     def __init__(self, dest_ip, dest_port):
         my_ip, my_port = get_ip_port_address()
@@ -75,15 +75,15 @@ class Packet:
         return s
 
     def get_ip_header(self, checksum):
-        return Packet.ip_header_to_checksum + pack("!H4s4s",
+        return Packet.IP_HEADER_TO_CHECKSUM + pack("!H4s4s",
                                                    checksum,
                                                    self.src_addr,
                                                    self.dest_addr)
 
     def get_tcp_header(self, checksum):
-        return pack("!HH", self.src_port, self.dest_port) + \
-               Packet.tcp_header_between_ports_checksum + \
-               pack("!HH", checksum, Packet.urg_pointer)
+        return (pack("!HH", self.src_port, self.dest_port) +
+                Packet.TCP_HEADER_BETWEEN_PORTS_CHECKSUM +
+                pack("!HH", checksum, Packet.URG_POINTER))
 
     def generate_packet(self):
         temp_ip_header = self.get_ip_header(0x0)
@@ -92,7 +92,7 @@ class Packet:
                              self.src_addr,
                              self.dest_addr,
                              0x0,
-                             Packet.protocol,
+                             Packet.PROTOCOL,
                              len(temp_tcp_header))
         psh = pseudo_header + temp_tcp_header
 
@@ -101,3 +101,17 @@ class Packet:
 
         self.packet = self.ip_header + self.tcp_header
         return self.packet
+
+    TCP_SYN_ACK = b'\x12'
+
+    @staticmethod
+    def get_scr_ip(data):
+        return data[20:22]
+
+    @staticmethod
+    def get_dept_ip(data):
+        return data[22:24]
+
+    @staticmethod
+    def get_flag(data):
+        return data[33:34]

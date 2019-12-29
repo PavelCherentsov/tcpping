@@ -1,27 +1,45 @@
 import argparse
 from modules.TCPing import TCPing
+from modules.window import Screen
+from threading import Thread
+import yaml
+from math import inf
+import signal
+import sys
 
 
-def parse(hosts_ports):
-    res = []
-    for e in hosts_ports:
-        host, port = e.split(":")
-        res.append((host, int(port)))
-    return res
+def signal_handler(sig, frame):
+    sys.exit(0)
+
+
+def start():
+    conf = yaml.safe_load(args.file_yaml)
+    tcpings = []
+    for e in conf:
+        tcpings.append(TCPing(e['host'],
+                              e['ports'],
+                              args.count,
+                              e['timeout'],
+                              e['interval']))
+    t = []
+    for e in tcpings:
+        t.append(Thread(target=e.start, daemon=True))
+    signal.signal(signal.SIGINT, signal_handler)
+    try:
+        for e in t:
+            e.start()
+        Screen(tcpings)
+        for e in t:
+            e.join()
+    except Exception as ex:
+        print(str(ex), file=sys.stderr)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='tcping')
-    parser.add_argument('host_port', nargs='*', type=str, metavar="host:port",
-                        default=['localhost:1234'],
+    parser.add_argument('file_yaml', type=open,
                         help='')
-    parser.add_argument('--count', '-c', metavar='N', type=int, default=5,
-                        help='')
-    parser.add_argument('--timeout', '-t', metavar='N', type=int, default=3,
-                        help='')
-    parser.add_argument('--interval', '-i', metavar='N', type=int, default=1,
+    parser.add_argument('--count', type=int, metavar='N', default=inf,
                         help='')
     args = parser.parse_args()
-    hosts_ports = parse(args.host_port)
-    for host, port in hosts_ports:
-        TCPing(print, host, port, args.count, args.timeout, args.interval)
+    start()

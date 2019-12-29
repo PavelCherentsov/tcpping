@@ -2,13 +2,14 @@ import os
 import unittest
 import sys
 from struct import pack
+from threading import Thread
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              os.path.pardir))
 
 from modules.Packet import Packet
 from modules.TCPing import TCPing
-from tcping import parse
+from tests.server import start_server
 
 
 class PacketTest(unittest.TestCase):
@@ -41,34 +42,29 @@ class PacketTest(unittest.TestCase):
 
 
 class TCPingTest(unittest.TestCase):
-    def setUp(self):
-        pass
+    def test_open(self):
+        thread = Thread(target=start_server, daemon=True)
+        thread.start()
+        t = TCPing('localhost', 10000, 1, 10, 0.1)
+        thread1 = Thread(target=t.ping, daemon=True)
+        thread1.start()
+        thread1.join(timeout=1)
+        self.assertEqual(t.output[1], "OPEN")
+        thread.join(timeout=1)
 
-    def tearDown(self):
-        pass
+    def test_close(self):
+        t = TCPing('localhost', 10000, 1, 10, 0.1)
+        thread1 = Thread(target=t.ping, daemon=True)
+        thread1.start()
+        thread1.join(timeout=1)
+        self.assertEqual(t.output[1], "CLOSE")
 
-    def test_packet_get_ip_header(self):
-        l = []
-
-        def add(text):
-            l.append(text)
-
-        TCPing(add, 'google.com', 80, 3, 1, 1)
-        flag = False
-        for e in l:
-            if 'SYN' in e:
-                flag = True
-
-        self.assertTrue(flag)
-
-
-class ParseTest(unittest.TestCase):
-
-    def test_parse(self):
-        res = parse(['123.45.67.89:0', '127.0.0.1:20', 'google.com:80'])
-        self.assertEqual(res, [('123.45.67.89', 0),
-                               ('127.0.0.1', 20),
-                               ('google.com', 80)])
+    def test_no_answer(self):
+        t = TCPing('255.255.255.255', 1111, 10, 0.5, 0.5)
+        thread1 = Thread(target=t.start, daemon=True)
+        thread1.start()
+        thread1.join(timeout=2)
+        self.assertEqual(t.output[1], "-")
 
 
 if __name__ == '__main__':
